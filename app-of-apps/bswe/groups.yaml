@@ -12,12 +12,6 @@ spec:
           - name: demo
             accessGroup1: "dmuehlbachler"
             accessGroup2: ""
-          - name: b
-            accessGroup1: "b"
-            accessGroup2: ""
-          - name: g
-            accessGroup1: "g"
-            accessGroup2: ""
   template:
     metadata:
       name: "bswe-group-{{ .name }}-infrastructure"
