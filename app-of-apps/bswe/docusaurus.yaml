@@ -10,7 +10,7 @@ spec:
     - pullRequest:
         github:
           owner: muhlba91
-          repo: fh-burgenland-bswe-docusaurus
+          repo: hochschule-burgenland-docusaurus-demo
           labels:
             - preview
         requeueAfterSeconds: 300
@@ -30,7 +30,7 @@ spec:
         helm:
           valuesObject:
             image:
-              repository: quay.io/muhlba91/fh-burgenland-bswe-docusaurus
+              repository: quay.io/muhlba91/hochschule-burgenland-docusaurus-demo
               tag: "{{ .head_sha }}"
             ingress:
               enabled: true
