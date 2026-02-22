@@ -1,80 +1,42 @@
-# Hochschule Burgenland - Demo Applications
+# Hochschule Burgenland - Cluster Applications
 
 [![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/hochschule-burgenland-cluster-applications/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/hochschule-burgenland-cluster-applications/actions/workflows/pipeline.yml)
 [![License](https://img.shields.io/github/license/muhlba91/hochschule-burgenland-cluster-applications?style=for-the-badge)](LICENSE.md)
-[![](https://api.scorecard.dev/projects/github.com/muhlba91/hochschule-burgenland-cluster-applications/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/hochschule-burgenland-cluster-applications)
+[![Scorecard](https://api.scorecard.dev/projects/github.com/muhlba91/hochschule-burgenland-cluster-applications/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/hochschule-burgenland-cluster-applications)
 
-This repository contains demo applications for the courses at the FH Burgenland deployed via [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) using [GitOps](https://opengitops.dev).
+This repository manages demo applications for Hochschule Burgenland courses using [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) and [GitOps](https://opengitops.dev) principles.
 
----
+## Architecture
 
-## Bootstrapping
+The project follows the **App-of-Apps** pattern for automated bootstrapping and management.
 
-The Kubernetes cluster needs to be bootstrapped with ArgoCD pointing to this repository.
+- **Root Application:** Points to [`app-of-apps/`](app-of-apps/) to initialize the cluster.
+- **Group Infrastructure:** Uses `ApplicationSet` in [`app-of-apps/bswe/groups.yaml`](app-of-apps/bswe/groups.yaml) to dynamically provision environments for student groups.
 
----
+### Core Components
 
-## App-of-Apps
+The following Helm charts are located in [`charts/`](charts/):
 
-The repository follows the app-of-apps pattern.
+- [`bswe-group`](charts/bswe-group/): Provisions group-specific infrastructure including `ResourceQuota`, `LimitRange`, `AppProject`, and ArgoCD `Application` resources.
+- [`cluster-access`](charts/cluster-access/): Serves encrypted `kubeconfig` files via an Nginx service and PVC for vcluster access.
+- [`vcluster`](charts/vcluster/): Deploys virtual Kubernetes clusters.
+- [`demo-app`](charts/demo-app/): A simple Nginx-based demonstration application.
+- [`docusaurus`](charts/docusaurus/): Documentation site deployment.
 
-The first `Application` being defined needs to reference [`app-of-apps/`](app-of-apps/).
+## Operations
 
-These are bootstrapping the main applications, referring to the respective `charts/<application>`:
+### Bootstrapping
 
-- [`bswe-group`](#bswe-group): the BSWE group infrastructure
-- [`cluster-access`](#cluster-access): the cluster access
-- [`demo-app`](#demo-app): the demo app
-- [`vcluster`](#vcluster): the vcluster
-- [`vcluster-hpm`](#vcluster-hpm): the vcluster hostpath mapper
+To bootstrap the cluster, point your ArgoCD instance to the [`app-of-apps/`](app-of-apps/) directory of this repository.
 
-Each of these applications follows the app-of-apps pattern again, if necessary.
+### vcluster Management
 
----
+Helper scripts in [`vclusters/`](vclusters/) facilitate virtual cluster lifecycle management:
 
-## Charts
+- `playbook.sh`: Retrieves Kubeconfigs and synchronizes them with the `cluster-access` service.
+- `destroy.sh`: Removes stored configuration files.
 
-### BSWE Group
+## Automation
 
-The `bswe-group` chart creates necessary infrastructure for one BSWE group. It is patched by an `ApplicationSet` defined in the `app-of-apps` application.
-
-It defines the following resources:
-
-- `ResourceQuota`s: the group's namespace quotas (CPU, memory, storage, pods, services, etc.)
-- `LimitRange`: the group's namespace limits (CPU, memory)
-- `Secret`: the group's registry credentials (synchronized with the reflector)
-- `AppProject`: the group's ArgoCD project
-- `Application`: the group's ArgoCD app-of-apps application referencing the BSWE private repository
-- some guardrails as Kyverno policies
-
-### Cluster Access
-
-The `cluster-access` chart creates an nginx service serving a PVC which contains the encrypted `kubeconfig` file for the vclusters.
-
-### Demo App
-
-The `demo-app` chart creates a simple demo app using nginx.
-
-### vcluster
-
-The `vcluster` chart creates a configurable vcluster.
-
-### vcluster-hpm
-
-The `vcluster-hpm` chart installs the hostpath mapper (HPM) for the vcluster.
-
----
-
-## vcluster Helper Scripts
-
-In [`vclusters/`](vclusters/), there are helper scripts for accessing the vclusters:
-
-- `playbook.sh`: the playbook to retrieve the Kubernetes configurations and store them in `cluster-access`
-- `destroy.sh`: the playbook to remove the Kubernetes configurations
-
----
-
-## Continuous Integration and Automations
-
-- [GitHub Actions](https://docs.github.com/en/actions) are linting all YAML files.
-- [Renovate Bot](https://github.com/renovatebot/renovate) is updating ArgoCD applications, container images, and GitHub Actions.
+- **CI/CD:** GitHub Actions for YAML linting and validation.
+- **Dependency Management:** [Renovate Bot](https://github.com/renovatebot/renovate) automates updates for container images and GitHub Actions.
