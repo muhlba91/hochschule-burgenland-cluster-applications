@@ -22,7 +22,7 @@ spec:
             - /data/CONFIG_READY
             - /data/config.yaml
       source:
-        repoURL: https://github.com/muhlba91/fh-burgenland-bswe-cluster-applications
+        repoURL: https://github.com/muhlba91/hochschule-burgenland-cluster-applications
         path: charts/vcluster
         targetRevision: HEAD
         helm:

@@ -1,10 +1,10 @@
-# FH Burgenland - BSWE - Demo Applications
+# Hochschule Burgenland - Demo Applications
 
-[![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/fh-burgenland-bswe-cluster-applications/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/fh-burgenland-bswe-cluster-applications/actions/workflows/pipeline.yml)
-[![License](https://img.shields.io/github/license/muhlba91/fh-burgenland-bswe-cluster-applications?style=for-the-badge)](LICENSE.md)
-[![](https://api.scorecard.dev/projects/github.com/muhlba91/fh-burgenland-bswe-cluster-applications/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/fh-burgenland-bswe-cluster-applications)
+[![Build status](https://img.shields.io/github/actions/workflow/status/muhlba91/hochschule-burgenland-cluster-applications/pipeline.yml?style=for-the-badge)](https://github.com/muhlba91/hochschule-burgenland-cluster-applications/actions/workflows/pipeline.yml)
+[![License](https://img.shields.io/github/license/muhlba91/hochschule-burgenland-cluster-applications?style=for-the-badge)](LICENSE.md)
+[![](https://api.scorecard.dev/projects/github.com/muhlba91/hochschule-burgenland-cluster-applications/badge?style=for-the-badge)](https://scorecard.dev/viewer/?uri=github.com/muhlba91/hochschule-burgenland-cluster-applications)
 
-This repository contains demo applications for the course "Softwaremanagement II" at the FH Burgenland (BSWE) deployed on the `public-services-cluster` via [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) using [GitOps](https://opengitops.dev).
+This repository contains demo applications for the courses at the FH Burgenland deployed via [ArgoCD](https://argo-cd.readthedocs.io/en/stable/) using [GitOps](https://opengitops.dev).
 
 ---
 

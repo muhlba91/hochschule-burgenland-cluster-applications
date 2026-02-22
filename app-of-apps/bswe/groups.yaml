@@ -24,7 +24,7 @@ spec:
             - /data
             - /stringData
       source:
-        repoURL: https://github.com/muhlba91/fh-burgenland-bswe-cluster-applications
+        repoURL: https://github.com/muhlba91/hochschule-burgenland-cluster-applications
         path: charts/bswe-group
         targetRevision: HEAD
         helm:

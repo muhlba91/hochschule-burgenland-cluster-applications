@@ -24,7 +24,7 @@ spec:
     spec:
       project: default
       source:
-        repoURL: https://github.com/muhlba91/fh-burgenland-bswe-cluster-applications
+        repoURL: https://github.com/muhlba91/hochschule-burgenland-cluster-applications
         path: charts/docusaurus
         targetRevision: HEAD
         helm:
