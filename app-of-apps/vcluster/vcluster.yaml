@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: bswe-vcluster
+  name: vcluster
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
@@ -10,6 +10,12 @@ spec:
     - list:
         elements:
           - name: demo
+          # - name: curie
+          # - name: descartes
+          # - name: lovelace
+          # - name: meitner
+          # - name: newton
+          # - name: planck
   template:
     metadata:
       name: "cluster-group-{{ .name }}"
@@ -33,16 +39,16 @@ spec:
                 proxy:
                   extraSANs:
                     - "cluster-{{ .name }}.cluster-{{ .name }}"
-                    - "{{ .name }}.cluster.classroom.bswe.hochschule-burgenland.muehlbachler.xyz"
+                    - "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
                 ingress:
-                  host: "{{ .name }}.cluster.classroom.bswe.hochschule-burgenland.muehlbachler.xyz"
+                  host: "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
                   spec:
                     tls:
                       - hosts:
-                          - "{{ .name }}.cluster.classroom.bswe.hochschule-burgenland.muehlbachler.xyz"
+                          - "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
                         secretName: "vcluster-{{ .name }}-tls"
               exportKubeConfig:
-                server: "https://{{ .name }}.cluster.classroom.bswe.hochschule-burgenland.muehlbachler.xyz"
+                server: "https://{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
       destination:
         server: https://kubernetes.default.svc
         namespace: "cluster-{{ .name }}"

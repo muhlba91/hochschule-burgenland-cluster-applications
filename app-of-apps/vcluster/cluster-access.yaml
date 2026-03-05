@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: bswe-cluster-access
+  name: vlcuster-access
 spec:
   project: default
   source:
@@ -10,21 +10,21 @@ spec:
     repoURL: https://github.com/muhlba91/hochschule-burgenland-cluster-applications
     targetRevision: HEAD
     helm:
-      releaseName: bswe-cluster-access
+      releaseName: vlcuster-access
       valuesObject:
         ingress:
           enabled: true
           hosts:
-            - host: access.cluster.classroom.bswe.hochschule-burgenland.muehlbachler.xyz
+            - host: access.cluster.classroom.hochschule-burgenland.muehlbachler.xyz
               paths:
                 - path: /
                   pathType: ImplementationSpecific
           tls:
-            - secretName: bswe-cluster-access-tls
+            - secretName: vlcuster-access-tls
               hosts:
-                - access.cluster.classroom.bswe.hochschule-burgenland.muehlbachler.xyz
+                - access.cluster.classroom.hochschule-burgenland.muehlbachler.xyz
   destination:
-    namespace: bswe-cluster-access
+    namespace: vlcuster-access
     server: https://kubernetes.default.svc
   syncPolicy:
     automated:

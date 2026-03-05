@@ -2,7 +2,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: bswe-docusaurus
+  name: docusaurus
 spec:
   goTemplate: true
   goTemplateOptions: ["missingkey=error"]
@@ -35,14 +35,14 @@ spec:
             ingress:
               enabled: true
               hosts:
-                - host: "preview-{{ .number }}.docusaurus.demo.bswe.hochschule-burgenland.muehlbachler.xyz"
+                - host: "preview-{{ .number }}.docusaurus.demo.hochschule-burgenland.muehlbachler.xyz"
                   paths:
                     - path: /
                       pathType: ImplementationSpecific
               tls:
-                - secretName: bswe-docusaurus-tls-cert
+                - secretName: docusaurus-tls-cert
                   hosts:
-                    - "preview-{{ .number }}.docusaurus.demo.bswe.hochschule-burgenland.muehlbachler.xyz"
+                    - "preview-{{ .number }}.docusaurus.demo.hochschule-burgenland.muehlbachler.xyz"
       destination:
         server: https://kubernetes.default.svc
         namespace: docusaurus-preview-{{ .number }}
