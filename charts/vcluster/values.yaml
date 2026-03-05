@@ -29,6 +29,7 @@ vcluster:
             cpu: 5m
           limits:
             memory: 64Mi
+            cpu: "1"
 
     service:
       annotations:
@@ -46,9 +47,11 @@ vcluster:
       resources:
         requests:
           memory: 384Mi
+          cpu: 75m
           ephemeral-storage: 1Gi
         limits:
           memory: 512Mi
+          cpu: "1"
           ephemeral-storage: 2Gi
       persistence:
         volumeClaim:
