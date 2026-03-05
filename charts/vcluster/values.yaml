@@ -46,7 +46,6 @@ vcluster:
       resources:
         requests:
           memory: 384Mi
-          cpu: 75m
           ephemeral-storage: 1Gi
         limits:
           memory: 512Mi
