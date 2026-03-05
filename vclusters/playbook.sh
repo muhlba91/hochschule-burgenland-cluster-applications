@@ -3,7 +3,7 @@
 ZIP_PASSWORD=${ZIP_PASSWORD:-"password"}
 
 # fetch clusters
-mapfile -t clusters < <(kubectl get ns -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep '^cluster-' | sed 's/^cluster-//')
+clusters=($(kubectl get ns -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep '^cluster-' | sed 's/^cluster-//'))
 
 # generate configuration for each cluster
 for cluster in "${clusters[@]}"; do
