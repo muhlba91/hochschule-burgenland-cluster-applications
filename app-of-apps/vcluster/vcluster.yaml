@@ -13,11 +13,11 @@ spec:
           - name: curie
           - name: descartes
           - name: lovelace
-          - name: meitner
           - name: newton
-          - name: planck
-          - name: goodall
-          - name: darwin
+          - name: meitner
+          # - name: planck
+          # - name: goodall
+          # - name: darwin
   template:
     metadata:
       name: "cluster-group-{{ .name }}"
