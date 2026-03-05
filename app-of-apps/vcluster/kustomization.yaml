@@ -4,6 +4,6 @@ kind: Kustomization
 namespace: argocd
 resources:
   - ./kyverno-vcluster-policy.yaml
-  # - ./vcluster.yaml
+  - ./vcluster.yaml
   # - ./vcluster-demo-app.yaml
   # - ./cluster-access.yaml
