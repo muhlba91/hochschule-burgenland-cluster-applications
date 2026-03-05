@@ -11,7 +11,7 @@ vcluster:
       storageClasses:
         enabled: true
       persistentVolumes:
-        enabled: true    
+        enabled: true
     fromHost:
       ingressClasses:
         enabled: true
@@ -24,14 +24,16 @@ vcluster:
     coredns:
       deployment:
         resources:
+          requests:
+            memory: 64Mi
+            cpu: 5m
           limits:
-            memory: 256Mi
-            cpu: 500m
-    
+            memory: 64Mi
+
     service:
       annotations:
         traefik.ingress.kubernetes.io/service.serversscheme: https
-    
+
     ingress:
       enabled: true
       annotations:
@@ -42,9 +44,12 @@ vcluster:
 
     statefulSet:
       resources:
+        requests:
+          memory: 384Mi
+          cpu: 75m
+          ephemeral-storage: 1Gi
         limits:
-          memory: 768Mi
-          cpu: 500m
+          memory: 512Mi
           ephemeral-storage: 2Gi
       persistence:
         volumeClaim:

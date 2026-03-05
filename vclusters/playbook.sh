@@ -1,10 +1,12 @@
 #!/bin/bash
 
-CLUSTER_IDS=${CLUSTER_IDS:-"demo"}
 ZIP_PASSWORD=${ZIP_PASSWORD:-"password"}
 
+# fetch clusters
+mapfile -t clusters < <(kubectl get ns -o jsonpath='{.items[*].metadata.name}' | tr ' ' '\n' | grep '^cluster-' | sed 's/^cluster-//')
+
 # generate configuration for each cluster
-for cluster in ${CLUSTER_IDS}; do
+for cluster in "${clusters[@]}"; do
     echo "connecting to cluster-${cluster}..."
     vcluster connect cluster-${cluster} -n cluster-${cluster} --server=https://${cluster}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz --service-account admin --cluster-role cluster-admin --insecure --print > vclusters/configs/cluster-${cluster}.conf
     KUBECONFIG="vclusters/configs/cluster-${cluster}.conf" kubectl get pod -A
