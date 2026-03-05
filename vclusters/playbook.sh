@@ -17,7 +17,7 @@ done
 
 # copy configuration to the cluster-access pod
 CLUSTER_ACCESS_POD=$(kubectl -n vcluster-access get pod -l "app.kubernetes.io/name=cluster-access" -o jsonpath="{.items[0].metadata.name}")
-for cluster in ${CLUSTER_IDS}; do
+for cluster in "${clusters[@]}"; do
     echo "copying configuration for cluster-${cluster}..."
     kubectl -n vcluster-access cp vclusters/configs/cluster-${cluster}.zip $CLUSTER_ACCESS_POD:/usr/share/nginx/html/files/
 done
