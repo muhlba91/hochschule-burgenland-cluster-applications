@@ -15,5 +15,5 @@ appVersion: "0.0.0"
 
 dependencies:
   - name: vcluster
-    version: 0.33.0
+    version: 0.33.1
     repository: https://charts.loft.sh
