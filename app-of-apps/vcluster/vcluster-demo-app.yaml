@@ -5,16 +5,16 @@ metadata:
   name: demo-app
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
+  goTemplateOptions: [ "missingkey=error" ]
   generators:
     - list:
         elements:
           - name: demo
-          - name: curie
-          - name: descartes
-          - name: lovelace
-          - name: newton
-          - name: meitner
+          # - name: curie
+          # - name: descartes
+          # - name: lovelace
+          # - name: newton
+          # - name: meitner
           # - name: planck
           # - name: goodall
           # - name: darwin
@@ -35,14 +35,17 @@ spec:
             ingress:
               enabled: true
               hosts:
-                - host: "demo.{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+                - host: "demo.{{ .name
+                    }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
                   paths:
                     - path: /
                       pathType: ImplementationSpecific
               tls:
                 - secretName: "group-{{ .name }}-demo-tls"
                   hosts:
-                    - "demo.{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+                    - "demo.{{ .name
+                      }}.cluster.classroom.hochschule-burgenland.muehlbachler.x\
+                      yz"
       destination:
         server: "https://cluster-{{ .name }}.cluster-{{ .name }}"
         namespace: demo
