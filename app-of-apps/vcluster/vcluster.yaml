@@ -5,16 +5,16 @@ metadata:
   name: vcluster
 spec:
   goTemplate: true
-  goTemplateOptions: ["missingkey=error"]
+  goTemplateOptions: [ "missingkey=error" ]
   generators:
     - list:
         elements:
           - name: demo
-          - name: curie
-          - name: descartes
-          - name: lovelace
-          - name: newton
-          - name: meitner
+          # - name: curie
+          # - name: descartes
+          # - name: lovelace
+          # - name: newton
+          # - name: meitner
           # - name: planck
           # - name: goodall
           # - name: darwin
@@ -41,16 +41,21 @@ spec:
                 proxy:
                   extraSANs:
                     - "cluster-{{ .name }}.cluster-{{ .name }}"
-                    - "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+                    - "{{ .name
+                      }}.cluster.classroom.hochschule-burgenland.muehlbachler.x\
+                      yz"
                 ingress:
                   host: "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
                   spec:
                     tls:
                       - hosts:
-                          - "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+                          - "{{ .name
+                            }}.cluster.classroom.hochschule-burgenland.muehlbac\
+                            hler.xyz"
                         secretName: "vcluster-{{ .name }}-tls"
               exportKubeConfig:
-                server: "https://{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+                server: "https://{{ .name
+                  }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
       destination:
         server: https://kubernetes.default.svc
         namespace: "cluster-{{ .name }}"

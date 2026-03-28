@@ -6,4 +6,4 @@ resources:
   - ./kyverno-vcluster-policy.yaml
   - ./vcluster.yaml
   - ./vcluster-demo-app.yaml
-  - ./cluster-access.yaml
+  # - ./cluster-access.yaml
