@@ -5,7 +5,8 @@ metadata:
   name: vcluster
 spec:
   goTemplate: true
-  goTemplateOptions: [ "missingkey=error" ]
+  goTemplateOptions:
+    - "missingkey=error"
   generators:
     - list:
         elements:
