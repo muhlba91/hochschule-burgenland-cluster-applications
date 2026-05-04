@@ -24,22 +24,20 @@ service:
   type: ClusterIP
   port: 80
 
-ingress:
+gateway:
   enabled: true
   annotations:
     cert-manager.io/cluster-issuer: cluster-issuer-muehlbachler-xyz
-    external-dns.alpha.kubernetes.io/provider: public
-    external-dns.alpha.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:1
-    traefik.ingress.kubernetes.io/router.tls: "true"
-  hosts:
-    - host: chart-example.local
-      paths:
-        - path: /
-          pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: chart-example-tls
-  #    hosts:
-  #      - chart-example.local
+  hostname: chart-example.local
+  listenerset:
+    annotations:
+      external-dns.alpha.kubernetes.io/provider: public
+      external-dns.alpha.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:1
+    certificateName: chart-example-tls
+    parentRef:
+      group: gateway.networking.k8s.io
+      kind: Gateway
+      name: kgateway
 
 resources:
   limits:

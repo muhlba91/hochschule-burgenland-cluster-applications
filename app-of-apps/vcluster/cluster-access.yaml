@@ -12,17 +12,11 @@ spec:
     helm:
       releaseName: vcluster-access
       valuesObject:
-        ingress:
+        gateway:
           enabled: true
-          hosts:
-            - host: access.cluster.classroom.hochschule-burgenland.muehlbachler.xyz
-              paths:
-                - path: /
-                  pathType: ImplementationSpecific
-          tls:
-            - secretName: vcluster-access-tls
-              hosts:
-                - access.cluster.classroom.hochschule-burgenland.muehlbachler.xyz
+          hostname: access.cluster.classroom.hochschule-burgenland.muehlbachler.xyz
+          listenerset:
+            certificateName: vcluster-access-tls
   destination:
     namespace: vcluster-access
     server: https://kubernetes.default.svc
