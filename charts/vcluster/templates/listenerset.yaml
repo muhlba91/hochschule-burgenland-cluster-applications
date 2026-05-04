@@ -3,8 +3,6 @@ apiVersion: gateway.networking.k8s.io/v1
 kind: ListenerSet
 metadata:
   name: {{ .Release.Name }}
-  labels:
-    {{- include "docusaurus.labels" . | nindent 4 }}
   {{- with .Values.gateway.listenerset.annotations }}
   annotations:
     {{- toYaml . | nindent 4 }}
