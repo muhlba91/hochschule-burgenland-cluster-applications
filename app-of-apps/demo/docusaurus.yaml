@@ -32,17 +32,11 @@ spec:
             image:
               repository: quay.io/muhlba91/hochschule-burgenland-docusaurus-demo
               tag: "{{ .head_sha }}"
-            ingress:
+            gateway:
               enabled: true
-              hosts:
-                - host: "preview-{{ .number }}.docusaurus.demo.hochschule-burgenland.muehlbachler.xyz"
-                  paths:
-                    - path: /
-                      pathType: ImplementationSpecific
-              tls:
-                - secretName: docusaurus-tls-cert
-                  hosts:
-                    - "preview-{{ .number }}.docusaurus.demo.hochschule-burgenland.muehlbachler.xyz"
+              hostname: "preview-{{ .number }}.docusaurus.demo.hochschule-burgenland.muehlbachler.xyz"
+              listenerset:
+                certificateName: "docusaurus-preview-{{ .number }}-demo-tls"
       destination:
         server: https://kubernetes.default.svc
         namespace: docusaurus-preview-{{ .number }}

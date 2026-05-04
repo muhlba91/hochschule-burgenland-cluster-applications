@@ -37,6 +37,11 @@ spec:
         helm:
           releaseName: "cluster-{{ .name }}"
           valuesObject:
+            gateway:
+              enabled: true
+              hostname: "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+              listenerset:
+                certificateName: "vcluster-{{ .name }}-tls"
             vcluster:
               controlPlane:
                 proxy:
@@ -45,15 +50,6 @@ spec:
                     - "{{ .name
                       }}.cluster.classroom.hochschule-burgenland.muehlbachler.x\
                       yz"
-                ingress:
-                  host: "{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
-                  spec:
-                    tls:
-                      - hosts:
-                          - "{{ .name
-                            }}.cluster.classroom.hochschule-burgenland.muehlbac\
-                            hler.xyz"
-                        secretName: "vcluster-{{ .name }}-tls"
               exportKubeConfig:
                 server: "https://{{ .name
                   }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"

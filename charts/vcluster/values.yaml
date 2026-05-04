@@ -31,18 +31,6 @@ vcluster:
             memory: 64Mi
             cpu: "1"
 
-    service:
-      annotations:
-        traefik.ingress.kubernetes.io/service.serversscheme: https
-
-    ingress:
-      enabled: true
-      annotations:
-        cert-manager.io/cluster-issuer: cluster-issuer-muehlbachler-xyz
-        external-dns.alpha.kubernetes.io/provider: public
-        external-dns.alpha.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:1
-        traefik.ingress.kubernetes.io/router.tls: "true"
-
     statefulSet:
       resources:
         requests:
@@ -79,3 +67,18 @@ vcluster:
 
   telemetry:
     enabled: false
+
+gateway:
+  enabled: true
+  annotations:
+    cert-manager.io/cluster-issuer: cluster-issuer-muehlbachler-xyz
+  hostname: chart-example.local
+  listenerset:
+    annotations:
+      external-dns.alpha.kubernetes.io/provider: public
+      external-dns.alpha.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:1
+    certificateName: chart-example-tls
+    parentRef:
+      group: gateway.networking.k8s.io
+      kind: Gateway
+      name: kgateway
