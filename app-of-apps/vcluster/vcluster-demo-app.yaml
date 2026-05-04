@@ -33,8 +33,23 @@ spec:
           releaseName: demo-app
           valuesObject:
             group: "{{ .name }}"
-            gateway:
+            # FIXME: remove once gateway support is added to vcluster
+            ingress:
               enabled: true
+              hosts:
+                - host: "demo.{{ .name
+                    }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
+                  paths:
+                    - path: /
+                      pathType: ImplementationSpecific
+              tls:
+                - secretName: "group-{{ .name }}-demo-tls"
+                  hosts:
+                    - "demo.{{ .name
+                      }}.cluster.classroom.hochschule-burgenland.muehlbachler.x\
+                      yz"
+            gateway:
+              enabled: false
               hostname: "demo.{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
               listenerset:
                 certificateName: "group-{{ .name }}-demo-tls"
