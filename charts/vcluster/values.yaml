@@ -81,4 +81,5 @@ gateway:
     parentRef:
       group: gateway.networking.k8s.io
       kind: Gateway
-      name: kgateway
+      name: kgateway-gateway
+      namespace: kgateway
