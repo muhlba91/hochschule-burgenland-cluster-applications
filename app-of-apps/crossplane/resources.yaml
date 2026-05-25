@@ -1,0 +1,22 @@
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-resources
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/muhlba91/hochschule-burgenland-cluster-applications
+    path: crossplane/resources
+    targetRevision: HEAD
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-demo
+  syncPolicy:
+    automated:
+      prune: true
+      allowEmpty: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - FailOnSharedResource=true

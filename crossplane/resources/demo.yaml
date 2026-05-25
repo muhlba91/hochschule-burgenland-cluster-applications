@@ -1,0 +1,11 @@
+---
+apiVersion: object.scaleway.m.upbound.io/v1alpha1
+kind: Bucket
+metadata:
+  name: demo
+spec:
+  forProvider:
+    name: crossplane-bucket-demo
+    forceDestroy: true
+  providerConfigRef:
+    name: scaleway
