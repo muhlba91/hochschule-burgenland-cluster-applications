@@ -8,4 +8,5 @@ spec:
     name: crossplane-bucket-demo
     forceDestroy: true
   providerConfigRef:
+    kind: ClusterProviderConfig
     name: scaleway
