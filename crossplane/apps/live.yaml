@@ -1,0 +1,7 @@
+---
+apiVersion: example.crossplane.io/v1
+kind: App
+metadata:
+  name: live
+spec:
+  image: nginx
