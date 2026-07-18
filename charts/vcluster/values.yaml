@@ -12,8 +12,21 @@ vcluster:
         enabled: true
       persistentVolumes:
         enabled: true
+      gatewayApi:
+        httpRoutes:
+          enabled: true
+        tlsRoutes:
+          enabled: true
+        backendTLSPolicies:
+          enabled: true
+        referenceGrants:
+          enabled: auto
     fromHost:
       ingressClasses:
+        enabled: true
+      gatewayClasses:
+        enabled: true
+      gateways:
         enabled: true
 
   controlPlane:
