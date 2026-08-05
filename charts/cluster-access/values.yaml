@@ -52,7 +52,7 @@ autoscaling:
   enabled: false
 
 storage:
-  storageClassName: zfs
+  storageClassName: rook-ceph-block
   requests:
     size: 8Mi
 

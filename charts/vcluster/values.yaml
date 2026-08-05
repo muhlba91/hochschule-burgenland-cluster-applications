@@ -58,7 +58,7 @@ vcluster:
         volumeClaim:
           enabled: auto
           size: 5Gi
-          storageClass: zfs
+          storageClass: rook-ceph-block
 
   deploy:
     kubeProxy:
