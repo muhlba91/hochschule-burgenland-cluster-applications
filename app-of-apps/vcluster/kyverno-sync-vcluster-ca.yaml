@@ -29,6 +29,7 @@ spec:
         - name: ca
           variable:
             value: '{{ request.object.data."certificate-authority" }}'
+            jmesPath: "base64_decode(@)"
         - name: vclusterName
           variable:
             value: "{{ namespace }}"
