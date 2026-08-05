@@ -69,9 +69,7 @@ vcluster:
 
   integrations:
     metricsServer:
-      enabled: true
-      nodes: true
-      pods: true
+      enabled: false
 
   policies:
     resourceQuota:
