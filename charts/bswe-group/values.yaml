@@ -11,5 +11,8 @@ policies:
     registry: registry.hochschule-burgenland.muehlbachler.xyz
   imagePullSecret:
     name: registry-credentials
+  signatures:
+    enabled: false
+    onlyNamed: true
 
 repoURL: https://github.com/fhburgenland-bswe/swm2-ws2026-kubernetes-applications.git

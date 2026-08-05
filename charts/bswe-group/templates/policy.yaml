@@ -440,4 +440,67 @@ spec:
         spec:
           imagePullSecrets:
           - name: {{ .Values.policies.imagePullSecret.name }}
+
+{{- if .Values.policies.signatures.enabled -}}
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: verify-image-signature
+  annotations:
+    policies.kyverno.io/title: Verify Container Image Signatures
+    policies.kyverno.io/category: Sample
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Images from this registry must be signed via Sigstore keyless signing,
+      published either from a GitHub Actions workflow or a GitLab CI pipeline.
+      This policy verifies the cosign signature and pins the image to its
+      verified digest.
+  labels:
+    {{- include "bswe-group.labels" . | nindent 4 }}
+spec:
+  validationFailureAction: Enforce
+  background: false
+  rules:
+    - name: verify-signature
+      match:
+        any:
+          - resources:
+              kinds:
+                - Pod
+      preconditions:
+        all:
+          - key: {{ "\"{{ images.containers.*.name }}\"" }}
+            operator: AnyIn
+            value:
+              {{- if .Values.policies.signatures.onlyNamed }}
+              - "{{ .Values.policies.domain.registry }}/*-signed*"
+              {{- else }}
+              - "{{ .Values.policies.domain.registry }}/*"
+              {{- end }}
+      verifyImages:
+        - imageReferences:
+            {{- if .Values.policies.signatures.onlyNamed }}
+            - "{{ .Values.policies.domain.registry }}/*-signed*"
+            {{- else }}
+            - "{{ .Values.policies.domain.registry }}/*"
+            {{- end }}
+          imageRegistryCredentials:
+            secrets:
+              - "kyverno/{{ .Values.policies.imagePullSecret.name }}"
+          mutateDigest: true
+          attestors:
+            - count: 1
+              entries:
+                - keyless:
+                    subjectRegExp: "^https://github\\.com/.*$"
+                    issuer: "https://token.actions.githubusercontent.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev
+                - keyless:
+                    subjectRegExp: "^https://gitlab\\.com/.*$"
+                    issuer: "https://gitlab.com"
+                    rekor:
+                      url: https://rekor.sigstore.dev
+{{- end }}
 {{- end }}
