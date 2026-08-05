@@ -34,7 +34,7 @@ spec:
           valuesObject:
             group: "{{ .name }}"
             gateway:
-              enabled: true
+              enabled: false
               hostname: "demo.{{ .name }}.cluster.classroom.hochschule-burgenland.muehlbachler.xyz"
               listenerset:
                 certificateName: "group-{{ .name }}-demo-tls"

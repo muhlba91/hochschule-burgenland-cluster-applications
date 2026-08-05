@@ -21,10 +21,6 @@ vcluster:
           enabled: true
         referenceGrants:
           enabled: auto
-        customResources:
-          listenersets.gateway.networking.k8s.io:
-            enabled: true
-            scope: Namespaced
     fromHost:
       ingressClasses:
         enabled: true
