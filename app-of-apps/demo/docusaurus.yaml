@@ -18,8 +18,13 @@ spec:
     metadata:
       name: "docusaurus-preview-{{ .number }}"
       namespace: argocd
+      labels:
+        preview-environment: "true"
       annotations:
-        notifications.argoproj.io/subscribe.on-deployed.github: ""
+        notifications.argoproj.io/subscribe.on-deploying.github.muhlba91: ""
+        notifications.argoproj.io/subscribe.on-deployed.github.muhlba91: ""
+        notifications.argoproj.io/subscribe.on-deployment-failed.github.muhlba91: ""
+        notifications.argoproj.io/subscribe.on-health-degraded.github.muhlba91: ""
         revision: "{{ .head_sha }}"
     spec:
       project: default
