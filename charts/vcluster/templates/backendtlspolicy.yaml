@@ -9,6 +9,6 @@ spec:
       kind: Service
       name: {{ .Release.Name }}
   validation:
-    wellKnownCACertificates: SystemCertificates
+    wellKnownCACertificates: System
     hostname: {{ .Values.gateway.hostname }}
 {{- end }}
