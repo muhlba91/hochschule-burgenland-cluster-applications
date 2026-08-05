@@ -36,6 +36,10 @@ spec:
       kind: Secret
     - group: '*'
       kind: Ingress
+    - group: '*'
+      kind: ListenerSet
+    - group: '*'
+      kind: HTTPRoute
   roles:
     - name: bswe-group-{{ .Values.name }}
       description: "privileges to group-{{ .Values.name }}"

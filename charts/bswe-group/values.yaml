@@ -2,8 +2,14 @@
 name: X
 accessGroup1: ""
 accessGroup2: ""
-accessPrefix: "fhburgenland-bswe:swm2-ws2025-group-"
+accessPrefix: "fhburgenland-bswe:swm2-ws2026-group-"
 
-applyPolicies: true
+policies:
+  enabled: true
+  domain:
+    exposed: student.bswe.hochschule-burgenland.muehlbachler.xyz
+    registry: registry.hochschule-burgenland.muehlbachler.xyz
+  imagePullSecret:
+    name: registry-credentials
 
-repoURL: https://github.com/fhburgenland-bswe/swm2-ws2025-kubernetes-applications.git
+repoURL: https://github.com/fhburgenland-bswe/swm2-ws2026-kubernetes-applications.git

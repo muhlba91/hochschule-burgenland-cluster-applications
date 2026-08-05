@@ -1,4 +1,4 @@
-{{- if .Values.applyPolicies -}}
+{{- if .Values.policies.enabled -}}
 ---
 apiVersion: kyverno.io/v1
 kind: Policy
@@ -231,9 +231,178 @@ spec:
           deny:
             conditions:
               any:
-              - key: {{ "\"{{ contains(element.host, 'student.bswe.hochschule-burgenland.muehlbachler.xyz') }}\"" }}
+              - key: {{ printf "\"{{ contains(element.host, '%s') }}\"" .Values.policies.domain.exposed }}
                 operator: Equals
                 value: false
+
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: restrict-httproute-wildcard
+  annotations:
+    policies.kyverno.io/title: Restrict HTTPRoute Hostname with Wildcards
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: HTTPRoute
+    policies.kyverno.io/description: >-
+      HTTPRoute hostnames optionally accept a wildcard as an alternative
+      to precise matching. In some cases, this may be too permissive as it
+      would direct unintended traffic to the given HTTPRoute resource. This
+      policy enforces that any HTTPRoute hostname does not contain a wildcard
+      character.
+  labels:
+    {{- include "bswe-group.labels" . | nindent 4 }}
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: block-httproute-wildcard
+      match:
+        any:
+          - resources:
+              kinds:
+                - HTTPRoute
+      preconditions:
+        all:
+          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
+            operator: AnyIn
+            value: ["CREATE", "UPDATE"]
+      validate:
+        message: "Wildcards are not permitted as hostnames."
+        foreach:
+          - list: "request.object.spec.hostnames"
+            deny:
+              conditions:
+                any:
+                  - key: {{ "\"{{ contains(element, '*') }}\"" }}
+                    operator: Equals
+                    value: true
+
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: restrict-httproute-domains
+  annotations:
+    policies.kyverno.io/title: Restrict HTTPRoute Hostname Domains
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: HTTPRoute
+    policies.kyverno.io/description: >-
+      This policy enforces that any HTTPRoute hostname matches allowed domains.
+  labels:
+    {{- include "bswe-group.labels" . | nindent 4 }}
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: block-httproute-domains
+      match:
+        any:
+          - resources:
+              kinds:
+                - HTTPRoute
+      preconditions:
+        all:
+          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
+            operator: AnyIn
+            value: ["CREATE", "UPDATE"]
+      validate:
+        message: "Domain is not permitted as hostname."
+        foreach:
+          - list: "request.object.spec.hostnames"
+            deny:
+              conditions:
+                any:
+                  - key: {{ printf "\"{{ contains(element || '', '%s') }}\"" .Values.policies.domain.exposed }}
+                    operator: Equals
+                    value: false
+
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: restrict-listenerset-wildcard
+  annotations:
+    policies.kyverno.io/title: Restrict ListenerSet Hostname with Wildcards
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: ListenerSet
+    policies.kyverno.io/description: >-
+      ListenerSet listener hostnames optionally accept a wildcard as an
+      alternative to precise matching. In some cases, this may be too
+      permissive as it would direct unintended traffic to the given
+      ListenerSet resource. This policy enforces that any ListenerSet
+      listener hostname does not contain a wildcard character.
+  labels:
+    {{- include "bswe-group.labels" . | nindent 4 }}
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: block-listenerset-wildcard
+      match:
+        any:
+          - resources:
+              kinds:
+                - ListenerSet
+      preconditions:
+        all:
+          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
+            operator: AnyIn
+            value: ["CREATE", "UPDATE"]
+      validate:
+        message: "Wildcards are not permitted as listener hostnames."
+        foreach:
+          - list: "request.object.spec.listeners"
+            deny:
+              conditions:
+                any:
+                  - key: {{ "\"{{ contains(element.hostname, '*') }}\"" }}
+                    operator: Equals
+                    value: true
+
+---
+apiVersion: kyverno.io/v1
+kind: Policy
+metadata:
+  name: restrict-listenerset-domains
+  annotations:
+    policies.kyverno.io/title: Restrict ListenerSet Hostname Domains
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: ListenerSet
+    policies.kyverno.io/description: >-
+      This policy enforces that any ListenerSet listener hostname matches
+      allowed domains.
+  labels:
+    {{- include "bswe-group.labels" . | nindent 4 }}
+spec:
+  validationFailureAction: Enforce
+  background: true
+  rules:
+    - name: block-listenerset-domains
+      match:
+        any:
+          - resources:
+              kinds:
+                - ListenerSet
+      preconditions:
+        all:
+          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
+            operator: AnyIn
+            value: ["CREATE", "UPDATE"]
+      validate:
+        message: "Domain is not permitted as listener hostname."
+        foreach:
+          - list: "request.object.spec.listeners"
+            deny:
+              conditions:
+                any:
+                  - key: {{ printf "\"{{ contains(element.hostname || '', '%s') }}\"" .Values.policies.domain.exposed }}
+                    operator: Equals
+                    value: false
 
 ---
 apiVersion: kyverno.io/v1
@@ -264,11 +433,11 @@ spec:
       - key: {{ "\"{{ images.containers.*.name }}\"" }}
         operator: AnyIn
         value:
-        - "registry.hochschule-burgenland.muehlbachler.xyz/*"
+        - "{{ .Values.policies.domain.registry }}/*"
     validate:
       message: "An `imagePullSecret` is required when pulling from this registry."
       pattern:
         spec:
           imagePullSecrets:
-          - name: "registry-credentials"
+          - name: {{ .Values.policies.imagePullSecret.name }}
 {{- end }}
