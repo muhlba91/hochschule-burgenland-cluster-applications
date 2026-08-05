@@ -23,6 +23,9 @@ spec:
                 - kyverno
                 - cilium
       context:
+        - name: namespace
+          variable:
+            value: "{{ request.object.metadata.namespace }}"
         - name: ca
           variable:
             value: '{{ request.object.data."certificate-authority" }}'
