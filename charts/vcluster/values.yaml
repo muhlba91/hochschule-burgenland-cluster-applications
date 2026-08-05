@@ -28,6 +28,9 @@ vcluster:
         enabled: true
       gateways:
         enabled: true
+        mappings:
+          byName:
+            "kgateway/*": "kgateway/*"
 
   controlPlane:
     distro:
