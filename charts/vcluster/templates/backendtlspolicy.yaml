@@ -12,6 +12,6 @@ spec:
     caCertificateRefs:
       - group: ""
         kind: Secret
-        name: v{{ .Release.Name }}-ca
+        name: vcluster-{{ .Release.Name }}-ca
     hostname: {{ .Values.gateway.hostname }}
 {{- end }}
