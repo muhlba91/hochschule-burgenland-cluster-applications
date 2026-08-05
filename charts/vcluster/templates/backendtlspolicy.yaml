@@ -9,6 +9,9 @@ spec:
       kind: Service
       name: {{ .Release.Name }}
   validation:
-    wellKnownCACertificates: System
+    caCertificateRefs:
+      - group: ""
+        kind: Secret
+        name: v{{ .Release.Name }}-ca
     hostname: {{ .Values.gateway.hostname }}
 {{- end }}

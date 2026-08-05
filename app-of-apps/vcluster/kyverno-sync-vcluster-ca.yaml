@@ -1,0 +1,43 @@
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: sync-vcluster-ca
+spec:
+  rules:
+    - name: sync-vcluster-ca
+      match:
+        any:
+          - resources:
+              names:
+                - "vc-*"
+              kinds:
+                - Secret
+      exclude:
+        any:
+          - resources:
+              namespaces:
+                - kube-system
+                - default
+                - kube-public
+                - kyverno
+                - cilium
+      context:
+        - name: ca
+          variable:
+            value: '{{ request.object.data."certificate-authority" }}'
+        - name: vclusterName
+          variable:
+            value: "{{ namespace }}"
+            jmesPath: "to_string(@)"
+      generate:
+        kind: Secret
+        apiVersion: v1
+        name: "vcluster-{{ vclusterName }}-ca"
+        namespace: argocd
+        synchronize: true
+        generateExisting: true
+        data:
+          kind: Secret
+          stringData:
+            ca.crt: "{{ ca }}"
