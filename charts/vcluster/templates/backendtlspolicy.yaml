@@ -1,0 +1,14 @@
+{{- if .Values.gateway.enabled -}}
+apiVersion: gateway.networking.k8s.io/v1
+kind: BackendTLSPolicy
+metadata:
+  name: {{ .Release.Name }}
+spec:
+  targetRefs:
+    - group: ""
+      kind: Service
+      name: {{ .Release.Name }}
+  validation:
+    wellKnownCACertificates: SystemCertificates
+    hostname: {{ .Values.gateway.hostname }}
+{{- end }}
