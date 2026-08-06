@@ -5,6 +5,12 @@ metadata:
   name: kyverno-baseline
 spec:
   project: default
+  ignoreDifferences:
+    - kind: Secret
+      name: registry-credentials
+      jsonPointers:
+        - /data
+        - /stringData
   source:
     path: charts/kyverno-baseline
     repoURL: https://github.com/muhlba91/hochschule-burgenland-cluster-applications

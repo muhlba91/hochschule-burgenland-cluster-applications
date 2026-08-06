@@ -443,8 +443,8 @@ spec:
 
 {{- if .Values.policies.signatures.enabled -}}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedImageValidatingPolicy
 metadata:
   name: verify-image-signature
   annotations:
@@ -459,48 +459,47 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: false
-  rules:
-    - name: verify-signature
-      match:
-        any:
-          - resources:
-              kinds:
-                - Pod
-      preconditions:
-        all:
-          - key: {{ "\"{{ images.containers.*.name }}\"" }}
-            operator: AnyIn
-            value:
-              {{- if .Values.policies.signatures.onlyNamed }}
-              - "{{ .Values.policies.domain.registry }}/*-signed*"
-              {{- else }}
-              - "{{ .Values.policies.domain.registry }}/*"
-              {{- end }}
-      verifyImages:
-        - imageReferences:
-            {{- if .Values.policies.signatures.onlyNamed }}
-            - "{{ .Values.policies.domain.registry }}/*-signed*"
-            {{- else }}
-            - "{{ .Values.policies.domain.registry }}/*"
-            {{- end }}
-          imageRegistryCredentials:
-            secrets:
-              - "kyverno/{{ .Values.policies.imagePullSecret.name }}"
-          mutateDigest: true
-          attestors:
-            - count: 1
-              entries:
-                - keyless:
-                    subjectRegExp: "^https://github\\.com/.*$"
-                    issuer: "https://token.actions.githubusercontent.com"
-                    rekor:
-                      url: https://rekor.sigstore.dev
-                - keyless:
-                    subjectRegExp: "^https://gitlab\\.com/.*$"
-                    issuer: "https://gitlab.com"
-                    rekor:
-                      url: https://rekor.sigstore.dev
+  validationActions: [Deny]
+  webhookConfiguration:
+    timeoutSeconds: 15
+  evaluation:
+    background:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: ['v1']
+        operations: ['CREATE', 'UPDATE']
+        resources: ['pods']
+  matchImageReferences:
+    {{- if .Values.policies.signatures.onlyNamed }}
+    - glob: '{{ .Values.policies.domain.registry }}/*-signed*'
+    {{- else }}
+    - glob: '{{ .Values.policies.domain.registry }}/*'
+    {{- end }}
+  credentials:
+    allowInsecureRegistry: false
+    secrets:
+      - {{ .Values.policies.imagePullSecret.name }}
+  attestors:
+    - name: cosign
+      cosign:
+        keyless:
+          identities:
+            - issuer: 'https://token.actions.githubusercontent.com'
+              subjectRegExp: '^https://github\.com/.*$'
+            - issuer: 'https://gitlab.com'
+              subjectRegExp: '^https://gitlab\.com/.*$'
+        ctlog:
+          url: https://rekor.sigstore.dev
+  validationConfigurations:
+    mutateDigest: true
+    required: true
+  validations:
+    - expression: >-
+        images.containers.map(image, verifyImageSignatures(image, [attestors.cosign])).all(e, e > 0)
+      message: >-
+        image signature verification failed: image must be signed via Sigstore
+        keyless signing by a GitHub Actions or GitLab CI pipeline.
 {{- end }}
 {{- end }}
