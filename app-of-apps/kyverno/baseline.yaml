@@ -24,4 +24,5 @@ spec:
       allowEmpty: true
       selfHeal: true
     syncOptions:
+      - RespectIgnoreDifferences=true
       - FailOnSharedResource=true
