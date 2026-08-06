@@ -1,68 +1,68 @@
 ---
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
+apiVersion: policies.kyverno.io/v1
+kind: GeneratingPolicy
 metadata:
   name: sync-vcluster-kubectl
+  annotations:
+    policies.kyverno.io/title: Sync vCluster Kubeconfig to ArgoCD
+    policies.kyverno.io/category: Other
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Secret
+    policies.kyverno.io/description: >-
+      Clones vCluster kubeconfig-derived credentials (CA, client cert, client key)
+      from the vc-* Secret in each vCluster namespace into an ArgoCD cluster
+      registration Secret in the argocd namespace.
 spec:
-  rules:
-    - name: sync-vcluster-kubectl
-      match:
-        any:
-          - resources:
-              names:
-                - "vc-*"
-              kinds:
-                - Secret
-      exclude:
-        any:
-          - resources:
-              namespaces:
-                - kube-system
-                - default
-                - kube-public
-                - kyverno
-                - cilium
-      context:
-        - name: namespace
-          variable:
-            value: "{{ request.object.metadata.namespace }}"
-        - name: name
-          variable:
-            value: "{{ request.object.metadata.name }}"
-        - name: ca
-          variable:
-            value: "{{ request.object.data.\"certificate-authority\" }}"
-        - name: cert
-          variable:
-            value: "{{ request.object.data.\"client-certificate\" }}"
-        - name: key
-          variable:
-            value: "{{ request.object.data.\"client-key\" }}"
-        - name: vclusterName
-          variable:
-            value: "{{ namespace }}"
-            jmesPath: 'to_string(@)'
-      generate:
-        kind: Secret
-        apiVersion: v1
-        name: "vcluster-{{ vclusterName }}"
-        namespace: argocd
-        synchronize: true
-        generateExisting: true
-        data:
-          kind: Secret
-          metadata:
-            labels:
-              argocd.argoproj.io/secret-type: cluster
-          stringData:
-            name: "{{ vclusterName }}"
-            server: "https://{{ vclusterName }}.{{ namespace }}"
-            config: |
-              {
-                "tlsClientConfig": {
-                  "insecure": false,
-                  "caData": "{{ ca }}",
-                  "certData": "{{ cert }}",
-                  "keyData": "{{ key }}"
-                }
+  evaluation:
+    synchronize:
+      enabled: true
+    generateExisting:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [secrets]
+  matchConditions:
+    - name: vc-secret-name
+      expression: object.metadata.name.startsWith('vc-')
+    - name: exclude-namespaces
+      expression: >-
+        !(object.metadata.namespace in
+          ['kube-system', 'default', 'kube-public', 'kyverno', 'cilium'])
+  variables:
+    - name: namespace
+      expression: object.metadata.namespace
+    - name: name
+      expression: object.metadata.name
+    - name: ca
+      expression: object.data['certificate-authority']
+    - name: cert
+      expression: object.data['client-certificate']
+    - name: key
+      expression: object.data['client-key']
+    - name: vclusterName
+      expression: variables.namespace
+    - name: downstream
+      expression: >-
+        [
+          {
+            "kind": dyn("Secret"),
+            "apiVersion": dyn("v1"),
+            "metadata": dyn({
+              "name": "vcluster-" + variables.vclusterName,
+              "namespace": "argocd",
+              "labels": {
+                "argocd.argoproj.io/secret-type": "cluster"
               }
+            }),
+            "stringData": dyn({
+              "name": variables.vclusterName,
+              "server": "https://" + variables.vclusterName + "." + variables.namespace,
+              "config": "{\n  \"tlsClientConfig\": {\n    \"insecure\": false,\n    \"caData\": \"" + variables.ca + "\",\n    \"certData\": \"" + variables.cert + "\",\n    \"keyData\": \"" + variables.key + "\"\n  }\n}"
+            })
+          }
+        ]
+  generate:
+    - expression: generator.Apply("argocd", variables.downstream)
