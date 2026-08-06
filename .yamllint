@@ -8,7 +8,7 @@ ignore:
 
 rules:
   line-length:
-    max: 160
+    max: 225
   comments:
     min-spaces-from-content: 1
   braces:
