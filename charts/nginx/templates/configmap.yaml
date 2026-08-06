@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: html-files
+  labels:
+    {{- include "demo-app.labels" . | nindent 4 }}
+data:
+  index.html: |
+    <html>
+        <head>
+            <title>Index</title>
+        </head>
+        <body>
+            <h1>Index</h1>
+            <p>
+                This file was templates by Helm with the next paragraph.
+            </p>
+            <p>
+                {{ .Values.group }}
+            </p>
+        </body>
+    </html>
