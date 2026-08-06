@@ -1,7 +1,7 @@
 {{- if .Values.policies.enabled -}}
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: disallow-privileged-containers
   annotations:
@@ -45,7 +45,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: disallow-host-path
   annotations:
@@ -86,7 +86,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: disallow-host-ports
   annotations:
@@ -129,7 +129,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-nodeport
   annotations:
@@ -163,7 +163,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-ingress-wildcard
   annotations:
@@ -197,7 +197,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-ingress-domains
   annotations:
@@ -227,7 +227,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-httproute-wildcard
   annotations:
@@ -261,7 +261,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-httproute-domains
   annotations:
@@ -291,7 +291,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-listenerset-wildcard
   annotations:
@@ -325,7 +325,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: restrict-listenerset-domains
   annotations:
@@ -356,7 +356,7 @@ spec:
 
 ---
 apiVersion: policies.kyverno.io/v1
-kind: ValidatingPolicy
+kind: NamespacedValidatingPolicy
 metadata:
   name: require-imagepullsecrets
   annotations:
