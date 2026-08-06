@@ -314,7 +314,7 @@ spec:
       enabled: true
   matchConstraints:
     resourceRules:
-      - apiGroups: [gateway.networking.x-k8s.io]
+      - apiGroups: [gateway.networking.k8s.io]
         apiVersions: [v1alpha1]
         operations: [CREATE, UPDATE]
         resources: [listenersets]
@@ -345,8 +345,8 @@ spec:
       enabled: true
   matchConstraints:
     resourceRules:
-      - apiGroups: [gateway.networking.x-k8s.io]
-        apiVersions: [v1alpha1]
+      - apiGroups: [gateway.networking.k8s.io]
+        apiVersions: [v1]
         operations: [CREATE, UPDATE]
         resources: [listenersets]
   validations:
