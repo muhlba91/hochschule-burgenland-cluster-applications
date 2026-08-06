@@ -12,7 +12,7 @@ policies:
   imagePullSecret:
     name: registry-credentials
   signatures:
-    enabled: false
+    enabled: true
     onlyNamed: true
 
 repoURL: https://github.com/fhburgenland-bswe/swm2-ws2026-kubernetes-applications.git

@@ -1,7 +1,7 @@
 {{- if .Values.policies.enabled -}}
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-privileged-containers
   annotations:
@@ -15,34 +15,37 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: privileged-containers
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      validate:
-        message: >-
-          Privileged mode is disallowed. The fields spec.containers[*].securityContext.privileged,
-          spec.initContainers[*].securityContext.privileged, and spec.ephemeralContainers[*].securityContext.privileged must be unset or set to `false`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-              - =(securityContext):
-                  =(privileged): "false"
-            =(initContainers):
-              - =(securityContext):
-                  =(privileged): "false"
-            containers:
-              - =(securityContext):
-                  =(privileged): "false"
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  autogen:
+    podControllers:
+      controllers:
+        - deployments
+        - replicasets
+        - statefulsets
+        - daemonsets
+        - jobs
+        - cronjobs
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  validations:
+    - message: >-
+        Privileged mode is disallowed. Containers, initContainers, and
+        ephemeralContainers must not set securityContext.privileged to true.
+      expression: >-
+        object.spec.containers.all(c, !has(c.securityContext) || !has(c.securityContext.privileged) || c.securityContext.privileged == false) &&
+        object.spec.?initContainers.orValue([]).all(c, !has(c.securityContext) || !has(c.securityContext.privileged) || c.securityContext.privileged == false) &&
+        object.spec.?ephemeralContainers.orValue([]).all(c, !has(c.securityContext) || !has(c.securityContext.privileged) || c.securityContext.privileged == false)
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-path
   annotations:
@@ -57,26 +60,33 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: host-path
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      validate:
-        message: >-
-          HostPath volumes are forbidden. The field spec.volumes[*].hostPath must be unset.
-        pattern:
-          spec:
-            =(volumes):
-              - X(hostPath): "null"
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  autogen:
+    podControllers:
+      controllers:
+        - deployments
+        - replicasets
+        - statefulsets
+        - daemonsets
+        - jobs
+        - cronjobs
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  validations:
+    - message: "HostPath volumes are forbidden."
+      expression: >-
+        object.spec.?volumes.orValue([]).all(v, !has(v.hostPath))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: disallow-host-ports
   annotations:
@@ -87,39 +97,39 @@ metadata:
     policies.kyverno.io/description: >-
       Access to host ports allows potential snooping of network traffic and should not be
       allowed, or at minimum restricted to a known list. This policy ensures the `hostPort`
-      field is unset or set to `0`. 
+      field is unset or set to `0`.
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: host-ports-none
-      match:
-        any:
-        - resources:
-            kinds:
-              - Pod
-      validate:
-        message: >-
-          Use of host ports is disallowed. The fields spec.containers[*].ports[*].hostPort
-          , spec.initContainers[*].ports[*].hostPort, and spec.ephemeralContainers[*].ports[*].hostPort
-          must either be unset or set to `0`.
-        pattern:
-          spec:
-            =(ephemeralContainers):
-              - =(ports):
-                  - =(hostPort): 0
-            =(initContainers):
-              - =(ports):
-                  - =(hostPort): 0
-            containers:
-              - =(ports):
-                  - =(hostPort): 0
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  autogen:
+    podControllers:
+      controllers:
+        - deployments
+        - replicasets
+        - statefulsets
+        - daemonsets
+        - jobs
+        - cronjobs
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  validations:
+    - message: "Use of host ports is disallowed. hostPort must be unset or 0."
+      expression: >-
+        object.spec.containers.all(c, !has(c.ports) || c.ports.all(p, !has(p.hostPort) || p.hostPort == 0)) &&
+        object.spec.?initContainers.orValue([]).all(c, !has(c.ports) || c.ports.all(p, !has(p.hostPort) || p.hostPort == 0)) &&
+        object.spec.?ephemeralContainers.orValue([]).all(c, !has(c.ports) || c.ports.all(p, !has(p.hostPort) || p.hostPort == 0))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-nodeport
   annotations:
@@ -136,24 +146,24 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-  - name: validate-nodeport
-    match:
-      any:
-      - resources:
-          kinds:
-          - Service
-    validate:
-      message: "Services of type NodePort are not allowed."
-      pattern:
-        spec:
-          =(type): "!NodePort"
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [services]
+  validations:
+    - message: "Services of type NodePort are not allowed."
+      expression: >-
+        !has(object.spec.type) || object.spec.type != 'NodePort'
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-ingress-wildcard
   annotations:
@@ -170,34 +180,24 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: block-ingress-wildcard
-      match:
-        any:
-        - resources:
-            kinds:
-              - Ingress
-      preconditions:
-        all:
-        - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
-          operator: AnyIn
-          value: ["CREATE", "UPDATE"]
-      validate:
-        message: "Wildcards are not permitted as hosts."
-        foreach:
-        - list: "request.object.spec.rules"
-          deny:
-            conditions:
-              any:
-              - key: {{ "\"{{ contains(element.host, '*') }}\"" }}
-                operator: Equals
-                value: true
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [networking.k8s.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [ingresses]
+  validations:
+    - message: "Wildcards are not permitted as hosts."
+      expression: >-
+        object.spec.rules.all(r, !has(r.host) || !r.host.contains('*'))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-ingress-domains
   annotations:
@@ -210,34 +210,24 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: block-ingress-domains
-      match:
-        any:
-        - resources:
-            kinds:
-              - Ingress
-      preconditions:
-        all:
-        - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
-          operator: AnyIn
-          value: ["CREATE", "UPDATE"]
-      validate:
-        message: "Domain is not permitted as host."
-        foreach:
-        - list: "request.object.spec.rules"
-          deny:
-            conditions:
-              any:
-              - key: {{ printf "\"{{ contains(element.host, '%s') }}\"" .Values.policies.domain.exposed }}
-                operator: Equals
-                value: false
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [networking.k8s.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [ingresses]
+  validations:
+    - message: "Domain is not permitted as host."
+      expression: >-
+        object.spec.rules.all(r, has(r.host) && r.host.contains('{{ .Values.policies.domain.exposed }}'))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-httproute-wildcard
   annotations:
@@ -254,34 +244,24 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: block-httproute-wildcard
-      match:
-        any:
-          - resources:
-              kinds:
-                - HTTPRoute
-      preconditions:
-        all:
-          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
-            operator: AnyIn
-            value: ["CREATE", "UPDATE"]
-      validate:
-        message: "Wildcards are not permitted as hostnames."
-        foreach:
-          - list: "request.object.spec.hostnames"
-            deny:
-              conditions:
-                any:
-                  - key: {{ "\"{{ contains(element, '*') }}\"" }}
-                    operator: Equals
-                    value: true
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [gateway.networking.k8s.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [httproutes]
+  validations:
+    - message: "Wildcards are not permitted as hostnames."
+      expression: >-
+        object.spec.?hostnames.orValue([]).all(h, !h.contains('*'))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-httproute-domains
   annotations:
@@ -294,34 +274,24 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: block-httproute-domains
-      match:
-        any:
-          - resources:
-              kinds:
-                - HTTPRoute
-      preconditions:
-        all:
-          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
-            operator: AnyIn
-            value: ["CREATE", "UPDATE"]
-      validate:
-        message: "Domain is not permitted as hostname."
-        foreach:
-          - list: "request.object.spec.hostnames"
-            deny:
-              conditions:
-                any:
-                  - key: {{ printf "\"{{ contains(element || '', '%s') }}\"" .Values.policies.domain.exposed }}
-                    operator: Equals
-                    value: false
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [gateway.networking.k8s.io]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [httproutes]
+  validations:
+    - message: "Domain is not permitted as hostname."
+      expression: >-
+        object.spec.?hostnames.orValue([]).all(h, h.contains('{{ .Values.policies.domain.exposed }}'))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-listenerset-wildcard
   annotations:
@@ -338,34 +308,24 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: block-listenerset-wildcard
-      match:
-        any:
-          - resources:
-              kinds:
-                - ListenerSet
-      preconditions:
-        all:
-          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
-            operator: AnyIn
-            value: ["CREATE", "UPDATE"]
-      validate:
-        message: "Wildcards are not permitted as listener hostnames."
-        foreach:
-          - list: "request.object.spec.listeners"
-            deny:
-              conditions:
-                any:
-                  - key: {{ "\"{{ contains(element.hostname, '*') }}\"" }}
-                    operator: Equals
-                    value: true
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [gateway.networking.x-k8s.io]
+        apiVersions: [v1alpha1]
+        operations: [CREATE, UPDATE]
+        resources: [listenersets]
+  validations:
+    - message: "Wildcards are not permitted as listener hostnames."
+      expression: >-
+        object.spec.listeners.all(l, !has(l.hostname) || !l.hostname.contains('*'))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: restrict-listenerset-domains
   annotations:
@@ -379,67 +339,66 @@ metadata:
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-    - name: block-listenerset-domains
-      match:
-        any:
-          - resources:
-              kinds:
-                - ListenerSet
-      preconditions:
-        all:
-          - key: {{ "\"{{ request.operation || 'BACKGROUND' }}\"" }}
-            operator: AnyIn
-            value: ["CREATE", "UPDATE"]
-      validate:
-        message: "Domain is not permitted as listener hostname."
-        foreach:
-          - list: "request.object.spec.listeners"
-            deny:
-              conditions:
-                any:
-                  - key: {{ printf "\"{{ contains(element.hostname || '', '%s') }}\"" .Values.policies.domain.exposed }}
-                    operator: Equals
-                    value: false
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [gateway.networking.x-k8s.io]
+        apiVersions: [v1alpha1]
+        operations: [CREATE, UPDATE]
+        resources: [listenersets]
+  validations:
+    - message: "Domain is not permitted as listener hostname."
+      expression: >-
+        object.spec.listeners.all(l, has(l.hostname) && l.hostname.contains('{{ .Values.policies.domain.exposed }}'))
 
 ---
-apiVersion: kyverno.io/v1
-kind: Policy
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
 metadata:
   name: require-imagepullsecrets
   annotations:
     policies.kyverno.io/title: Require imagePullSecrets
     policies.kyverno.io/category: Sample
+    policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       Some registries, both public and private, require credentials in order to pull images
-      from them. This policy checks those images and if they come from ghcr.io an `imagePullSecret` is required.
+      from them. This policy checks those images and if they come from the configured
+      registry an `imagePullSecret` is required.
   labels:
     {{- include "bswe-group.labels" . | nindent 4 }}
 spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-  - name: check-for-image-pull-secrets
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-    preconditions:
-      all:
-      - key: {{ "\"{{ images.containers.*.name }}\"" }}
-        operator: AnyIn
-        value:
-        - "{{ .Values.policies.domain.registry }}/*"
-    validate:
-      message: "An `imagePullSecret` is required when pulling from this registry."
-      pattern:
-        spec:
-          imagePullSecrets:
-          - name: {{ .Values.policies.imagePullSecret.name }}
+  validationActions: [Deny]
+  evaluation:
+    background:
+      enabled: true
+  autogen:
+    podControllers:
+      controllers:
+        - deployments
+        - replicasets
+        - statefulsets
+        - daemonsets
+        - jobs
+        - cronjobs
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+  matchConditions:
+    - name: uses-registry
+      expression: >-
+        object.spec.containers.exists(c, c.image.startsWith('{{ .Values.policies.domain.registry }}/'))
+  validations:
+    - message: "An `imagePullSecret` is required when pulling from this registry."
+      expression: >-
+        has(object.spec.imagePullSecrets) &&
+        object.spec.imagePullSecrets.exists(s, s.name == '{{ .Values.policies.imagePullSecret.name }}')
 
 {{- if .Values.policies.signatures.enabled -}}
 ---
@@ -450,6 +409,7 @@ metadata:
   annotations:
     policies.kyverno.io/title: Verify Container Image Signatures
     policies.kyverno.io/category: Sample
+    policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/description: >-
       Images from this registry must be signed via Sigstore keyless signing,
@@ -468,28 +428,42 @@ spec:
   matchConstraints:
     resourceRules:
       - apiGroups: ['']
-        apiVersions: ['v1']
-        operations: ['CREATE', 'UPDATE']
-        resources: ['pods']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+      - apiGroups: [apps]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [deployments, replicasets, statefulsets, daemonsets]
+      - apiGroups: [batch]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [jobs, cronjobs]
   matchImageReferences:
     {{- if .Values.policies.signatures.onlyNamed }}
-    - glob: '{{ .Values.policies.domain.registry }}/*-signed*'
+    - glob: {{ .Values.policies.domain.registry }}/*-signed*
     {{- else }}
-    - glob: '{{ .Values.policies.domain.registry }}/*'
+    - glob: {{ .Values.policies.domain.registry }}/*
     {{- end }}
   credentials:
     allowInsecureRegistry: false
     secrets:
       - {{ .Values.policies.imagePullSecret.name }}
   attestors:
-    - name: cosign
+    - name: github
       cosign:
         keyless:
           identities:
-            - issuer: 'https://token.actions.githubusercontent.com'
-              subjectRegExp: '^https://github\.com/.*$'
-            - issuer: 'https://gitlab.com'
-              subjectRegExp: '^https://gitlab\.com/.*$'
+            - issuer: https://token.actions.githubusercontent.com
+              subjectRegExp: ^https://github\.com/.*$
+        ctlog:
+          url: https://rekor.sigstore.dev
+    - name: gitlab
+      cosign:
+        keyless:
+          identities:
+            - issuer: https://gitlab.com
+              subjectRegExp: ^https://gitlab\.com/.*$
         ctlog:
           url: https://rekor.sigstore.dev
   validationConfigurations:
@@ -497,7 +471,9 @@ spec:
     required: true
   validations:
     - expression: >-
-        images.containers.map(image, verifyImageSignatures(image, [attestors.cosign])).all(e, e > 0)
+        images.containers.all(image,
+          verifyImageSignatures(image, [attestors.github]) > 0 ||
+          verifyImageSignatures(image, [attestors.gitlab]) > 0)
       message: >-
         image signature verification failed: image must be signed via Sigstore
         keyless signing by a GitHub Actions or GitLab CI pipeline.
