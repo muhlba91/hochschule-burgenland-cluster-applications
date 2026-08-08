@@ -478,4 +478,102 @@ spec:
         image signature verification failed: image must be signed via Sigstore
         keyless signing by a GitHub Actions or GitLab CI pipeline.
 {{- end }}
+
+{{- if .Values.policies.sbom.enabled -}}
+---
+apiVersion: policies.kyverno.io/v1
+kind: NamespacedImageValidatingPolicy
+metadata:
+  name: verify-image-vulnerabilities
+  annotations:
+    policies.kyverno.io/title: Verify Container Image Vulnerability Attestation
+    policies.kyverno.io/category: Sample
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/description: >-
+      Images from this registry must carry a signed Trivy cosign-vuln
+      attestation. Any critical, fixable finding is denied outright. Fixable
+      high findings are allowed up to a configurable threshold. Findings
+      without an available fix do not count toward either limit.
+  labels:
+    {{- include "bswe-group.labels" . | nindent 4 }}
+spec:
+  validationActions: [Deny]
+  webhookConfiguration:
+    timeoutSeconds: 15
+  evaluation:
+    background:
+      enabled: false
+  matchConstraints:
+    resourceRules:
+      - apiGroups: ['']
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+      - apiGroups: [apps]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [deployments, replicasets, statefulsets, daemonsets]
+      - apiGroups: [batch]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [jobs, cronjobs]
+  matchImageReferences:
+    {{- if .Values.policies.sbom.onlyNamed }}
+    - glob: {{ .Values.policies.domain.registry }}/*-sbom*
+    {{- else }}
+    - glob: {{ .Values.policies.domain.registry }}/*
+    {{- end }}
+  credentials:
+    allowInsecureRegistry: false
+    secrets:
+      - {{ .Values.policies.imagePullSecret.name }}
+  attestors:
+    - name: github
+      cosign:
+        keyless:
+          identities:
+            - issuer: https://token.actions.githubusercontent.com
+              subjectRegExp: ^https://github\.com/.*$
+        ctlog:
+          url: https://rekor.sigstore.dev
+    - name: gitlab
+      cosign:
+        keyless:
+          identities:
+            - issuer: https://gitlab.com
+              subjectRegExp: ^https://gitlab\.com/.*$
+        ctlog:
+          url: https://rekor.sigstore.dev
+  attestations:
+    - name: vuln
+      intoto:
+        type: https://cosign.sigstore.dev/attestation/vuln/v1
+  validations:
+    - message: >-
+        vulnerability attestation signature verification failed: the
+        attestation must be signed by a GitHub Actions or GitLab CI pipeline.
+      expression: >-
+        images.containers.all(image,
+          verifyAttestationSignatures(image, attestations.vuln, [attestors.github]) > 0 ||
+          verifyAttestationSignatures(image, attestations.vuln, [attestors.gitlab]) > 0)
+    - message: "image has critical, fixable vulnerability findings"
+      expression: >-
+        images.containers.all(image,
+          extractPayload(image, attestations.vuln).scanner.result.?Results.orValue([])
+            .map(r, r.?Vulnerabilities.orValue([]))
+            .flatten()
+            .filter(v, v.Severity == 'CRITICAL' && has(v.FixedVersion) && v.FixedVersion != '')
+            .size() <= {{ .Values.policies.sbom.maxCriticalFindings }})
+    - message: >-
+        image has more than {{ .Values.policies.sbom.maxHighFindings }} high,
+        fixable vulnerability findings
+      expression: >-
+        images.containers.all(image,
+          extractPayload(image, attestations.vuln).scanner.result.?Results.orValue([])
+            .map(r, r.?Vulnerabilities.orValue([]))
+            .flatten()
+            .filter(v, v.Severity == 'HIGH' && has(v.FixedVersion) && v.FixedVersion != '')
+            .size() <= {{ .Values.policies.sbom.maxHighFindings }})
+{{- end }}
 {{- end }}

@@ -14,5 +14,10 @@ policies:
   signatures:
     enabled: true
     onlyNamed: true
+  sbom:
+    enabled: true
+    onlyNamed: true
+    maxCriticalFindings: 0
+    maxHighFindings: 5
 
 repoURL: https://github.com/fhburgenland-bswe/swm2-ws2026-kubernetes-applications.git
