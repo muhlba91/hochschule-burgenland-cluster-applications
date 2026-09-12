@@ -55,8 +55,8 @@ vcluster:
       enabled: true
       annotations:
         cert-manager.io/cluster-issuer: cluster-issuer-muehlbachler-xyz
-        external-dns.alpha.kubernetes.io/provider: public
-        external-dns.alpha.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:3
+        external-dns.kubernetes.io/provider: public
+        external-dns.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:3
         traefik.ingress.kubernetes.io/router.tls: "true"
 
     statefulSet:
@@ -97,8 +97,8 @@ vcluster:
 gateway:
   enabled: true
   annotations:
-    external-dns.alpha.kubernetes.io/provider: public
-    external-dns.alpha.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:2
+    external-dns.kubernetes.io/provider: public
+    external-dns.kubernetes.io/target: 178.63.69.250,2a01:4f8:121:14e2:100:3:3:2
   hostname: chart-example.local
   listenerset:
     annotations:
