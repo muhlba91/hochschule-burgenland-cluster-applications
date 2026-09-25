@@ -20,7 +20,7 @@ spec:
     - matches:
         - path:
             type: PathPrefix
-            value: /
+            value: /hochschule-burgenland-docusaurus-demo/
       backendRefs:
         - name: {{ $fullName }}
           port: {{ $svcPort }}
