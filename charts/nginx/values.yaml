@@ -63,6 +63,7 @@ gateway:
   listenerset:
     annotations:
       cert-manager.io/cluster-issuer: cluster-issuer-muehlbachler-xyz
+      external-dns.kubernetes.io/provider: public
     certificateName: chart-example-tls
     parentRef:
       group: gateway.networking.k8s.io
