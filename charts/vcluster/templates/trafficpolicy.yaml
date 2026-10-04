@@ -1,0 +1,18 @@
+{{- if .Values.gateway.enabled -}}
+apiVersion: gateway.kgateway.dev/v1alpha1
+kind: TrafficPolicy
+metadata:
+  name: {{ .Release.Name }}
+  {{- with .Values.gateway.annotations }}
+  annotations:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+spec:
+  targetRefs:
+    - name: {{ .Release.Name }}
+      kind: HTTPRoute
+      group: gateway.networking.k8s.io
+  timeouts:
+    request: 3600s
+    streamIdle: 3600s
+{{- end }}
