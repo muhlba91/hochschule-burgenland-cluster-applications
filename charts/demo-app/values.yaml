@@ -35,6 +35,8 @@ securityContext: {}
 service:
   type: ClusterIP
   port: 80
+  # nginx 1.16 (appVersion) does not listen on IPv6, keep single-stack
+  ipFamilyPolicy: ""
 
 ingress:
   enabled: false

@@ -48,6 +48,8 @@ vcluster:
             cpu: "1"
 
     service:
+      spec:
+        ipFamilyPolicy: PreferDualStack
       annotations:
         traefik.ingress.kubernetes.io/service.serversscheme: https
 
