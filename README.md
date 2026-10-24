@@ -13,6 +13,7 @@ The project implements the **App-of-Apps** pattern to provide automated bootstra
 - **Root Application:** Points to [`app-of-apps/`](app-of-apps/) to initialize the cluster-wide configuration.
 - **Tenant Infrastructure:** Uses `ApplicationSet` in [`app-of-apps/bswe/groups.yaml`](app-of-apps/bswe/groups.yaml) to dynamically provision isolated environments for student groups.
 - **Virtual Clusters:** Manages virtual Kubernetes instances via [`app-of-apps/vcluster/`](app-of-apps/vcluster/) for advanced isolation and testing.
+- **Agents:** Manages cluster-side access for automated agents via [`app-of-apps/agents/`](app-of-apps/agents/), which deploys the manifests in [`agents/`](agents/).
 
 ### Core Components
 
@@ -23,6 +24,12 @@ The following Helm charts are located in [`charts/`](charts/):
 - [`vcluster`](charts/vcluster/): Deploys [vcluster](https://www.vcluster.com/) instances for virtualized Kubernetes environments.
 - [`demo-app`](charts/demo-app/): A standard Nginx-based demonstration application for testing deployments.
 - [`docusaurus`](charts/docusaurus/): Deployment for Docusaurus-based documentation sites.
+
+### Agents
+
+Manifests in [`agents/`](agents/) are deployed through the `hsb-grader` Argo CD `Application` ([`app-of-apps/agents/grader.yaml`](app-of-apps/agents/grader.yaml)):
+
+- [`hsb-grader`](agents/hsb-grader/): Provides a read-only grader account for the course cluster. [`rbac.yaml`](agents/hsb-grader/rbac.yaml) creates the `hsb-grader` namespace, a `ServiceAccount` with a long-lived token `Secret`, and a `ClusterRole`/`ClusterRoleBinding` granting `get`/`list` on pods (incl. logs), services, events, deployments, replicasets, ingresses, Gateway API `HTTPRoute`s/`ListenerSet`s and Argo CD `Application`s in all namespaces. No `Secret` access and no write verbs are granted.
 
 ## Operations
 

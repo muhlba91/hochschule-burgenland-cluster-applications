@@ -7,4 +7,5 @@ resources:
   - ./vcluster/
   - ./demo/
   - ./crossplane/
+  - ./agents/
   - ./bswe/

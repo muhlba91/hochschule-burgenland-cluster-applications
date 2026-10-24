@@ -1,0 +1,62 @@
+# Read-only grader account for the course cluster (common/guides/environment.md, Cluster).
+# Apply as the cluster admin:   kubectl apply -f common/templates/k8s_grader.yaml
+# Then write the kubeconfig:    common/tools/grader_kubeconfig.sh "$HSB_WORK_ROOT/secrets/kubeconfig"
+# Exactly what common/tools/cluster.py reads – no secrets, no write verb; one ClusterRoleBinding covers the group
+# namespaces and the Argo CD namespace.
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hsb-grader
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: hsb-grader
+  namespace: hsb-grader
+automountServiceAccountToken: false
+---
+# long-lived token of the ServiceAccount (deleted with this Secret – rotate by deleting and re-applying it)
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hsb-grader-token
+  namespace: hsb-grader
+  annotations:
+    kubernetes.io/service-account.name: hsb-grader
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: hsb-grader-read
+rules:
+  - apiGroups: [""]
+    resources: [pods, pods/log, services, events]
+    verbs: [get, list]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets]
+    verbs: [get, list]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses]
+    verbs: [get, list]
+  - apiGroups: [gateway.networking.k8s.io]
+    resources: [httproutes, listenersets]
+    verbs: [get, list]
+  - apiGroups: [argoproj.io]
+    resources: [applications]
+    verbs: [get, list]
+---
+# read in every namespace (never secrets – the role has none)
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: hsb-grader-read
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: hsb-grader-read
+subjects:
+  - kind: ServiceAccount
+    name: hsb-grader
+    namespace: hsb-grader
