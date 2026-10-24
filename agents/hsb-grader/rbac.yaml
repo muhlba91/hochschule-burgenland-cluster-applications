@@ -1,6 +1,6 @@
 # Read-only grader account for the course cluster (common/guides/environment.md, Cluster).
 # Apply as the cluster admin:   kubectl apply -f common/templates/k8s_grader.yaml
-# Then write the kubeconfig:    common/tools/grader_kubeconfig.sh "$HSB_WORK_ROOT/secrets/kubeconfig"
+# Then write the kubeconfig:    common/tools/grader_kubeconfig.sh work/secrets/kubeconfig
 # Exactly what common/tools/cluster.py reads – no secrets, no write verb; one ClusterRoleBinding covers the group
 # namespaces and the Argo CD namespace.
 ---
@@ -35,7 +35,7 @@ rules:
     resources: [pods, pods/log, services, events]
     verbs: [get, list]
   - apiGroups: [apps]
-    resources: [deployments, replicasets]
+    resources: [deployments]
     verbs: [get, list]
   - apiGroups: [networking.k8s.io]
     resources: [ingresses]
