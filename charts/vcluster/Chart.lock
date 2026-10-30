@@ -1,6 +1,6 @@
 dependencies:
 - name: vcluster
   repository: https://charts.loft.sh
-  version: 0.37.4
-digest: sha256:3122cb2c9899d1a951951bf52322ae5f461e33fbb2f23db3795c1cb6721e6827
-generated: "2026-10-21T00:49:29.073285281Z"
+  version: 0.37.5
+digest: sha256:4409aee4eb97a39f74d094eee744e88bad492a351f2e590743046c9b7e179e3f
+generated: "2026-10-30T02:37:01.635874232Z"
