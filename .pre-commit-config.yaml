@@ -13,9 +13,6 @@ repos:
       - id: check-json
       - id: check-merge-conflict
       - id: check-symlinks
-      - id: check-toml
-      - id: check-xml
-      - id: destroyed-symlinks
       - id: detect-aws-credentials
         args: [
           "--allow-missing-credentials"
@@ -36,3 +33,24 @@ repos:
     rev: v8.30.1
     hooks:
       - id: gitleaks
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.7.12
+    hooks:
+      - id: actionlint
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.38.0
+    hooks:
+      - id: yamllint
+  - repo: local
+    hooks:
+      - id: shellcheck
+        name: shellcheck
+        entry: shellcheck
+        language: system
+        types: [shell]
+      - id: markdownlint-cli2
+        name: markdownlint-cli2
+        entry: markdownlint-cli2
+        language: system
+        types: [markdown]
+        exclude: ^LICENSE\.md$
